@@ -1,5 +1,5 @@
 """
--Pagando o pedido:
+-Salvando e Pagando o pedido:
 
 -A primeira verificação que temos que fazer é perceber se quando o cliente for
 fazer o pagamento, se existe estoque suficiente d eum produto, na base de dados
@@ -117,5 +117,57 @@ e produtos disponíveis em estoque, para que o cliente possa realizar sua compra
     Na parte do html que correspondia a Realizar pedido e pagar, estava 
     href="{% url 'pedido:pagar' %}" e devemos alterar para: 
     href="{% url 'pedido:salvarpedido' %}"
+    -Assim que fizemos essa mudança, já fizemos o commit para o GitHub
+    -Não podemos esquecer que quando o carrinho é salvo, em SalvarPedido, ele
+    já é eliminado: del self.request.session['carrinho']
+
+-Agora, na class SalvarPedido ainda temos que adicionar o código que corresponde
+ao redirecionamento de página, para que o cliente possa pagar. Vamos selecionar
+o pedido para pagamento através do seu id(primary-key): 
+        return redirect(
+            reverse(
+                'pedido:pagar',
+                kwargs={
+                    'pk': pedido.pk
+                }
+            )
+        )
+
+-No arquivo views, vamos importar o DetailView e a class Pagar vai herdar dela
+e vamos dar coninuidade as edições dessa class Pagar:
+    -Vamos adicionar o template_name mais algumas variáveis
+    -Depois vamos pegar parte do código que está dentro de um arquivo que ele
+    nos enviou, chamado 'pagar.html' e vamos adicionar dentro do nosso arquivo
+    'pagar.html', que está dentro da app pedido
+    -Pegamos a parte do código que estava entre a tag <main> e colocamos no
+    nosso arquivo pagar.html, dentro do conteudo e vamos começar as alterações
+    necessárias
+
+-Obs: conseguimos abrir a página final, antes do pagamento, onde se tem os dados
+do pedido, através de uma guia anónima. Isso não pode acontecer por motivos de
+segurança. Para isso, faremos o seguinte:
+    -No arquivo views, criaremos uma class DispatchLoginRequired(View). Depois,
+    dentro dessa class, vamos definir o método dispatch que descobre para onde
+    a página está indo (se é POST ou GET). Esse método está dentro dessa class
+    View e nós vamos modificá-lo. Vamos criar uma condicional para verificar se
+    o usuário está autenticado. Se ele não estiver, vamos redirecioná-lo para
+    a página de login ('perfil:criar')
+    -Obs: não podemos esquecer de colocar essa class DispatchLoginRequired como
+    herança na class Pagar
+
+-Obs: temos outro problema por resolver. Outro cliente conseguiria aceder a um
+carrinho de compras de outro cliente, nessa fase de escolha de pagamento, através
+do nº do pedido. Isso tbm não pode acontecer.
+    -Na class Pagar, vamos definir o método queryset() e vamos filtrar essa
+    queryset pelo usuário que estiver logado, ou seja, cada usuário terá acesso
+    apenas ao seu carrinho e método de pagamento, através do seu login:
+        def get_queryset(self, *args, **kwargs):
+            qs = super().get_queryset(*args, **kwargs)
+            qs = qs.filter(usuario=self.request.user)
+            return qs
+
+-No arquivo views da app pedido ainda está faltando configurar a class Detalhe
+e a class Lista. Uma será o complemento da outra. Vamos ter uma lista de pedidos
+de um cliente e quando entrarmos nessa lista, vão aparecer os detalhes
 
 """

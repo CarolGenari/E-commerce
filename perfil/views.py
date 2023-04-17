@@ -1,13 +1,14 @@
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.views import View
 from django.http import HttpResponse
-from . import models
-from . import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 import copy
-from django.contrib import messages
+
+from . import models
+from . import forms
 
 
 class BasePerfil(View):
@@ -22,7 +23,8 @@ class BasePerfil(View):
 
         if self.request.user.is_authenticated:
             self.perfil = models.Perfil.objects.filter(
-                usuario=self.request.user).first()
+                usuario=self.request.user
+            ).first()
 
             self.contexto = {
                 'userform': forms.UserForm(
@@ -63,9 +65,10 @@ class Criar(BasePerfil):
         if not self.userform.is_valid() or not self.perfilform.is_valid():
             messages.error(
                 self.request,
-                'Existem erros no formulário. Por favor, verifique.'
-                'se os campos foram preenchidos corretamente.'
+                'Existem erros no formulário de cadastro. Verifique se todos '
+                'os campos foram preenchidos corretamente.'
             )
+
             return self.renderizar
 
         username = self.userform.cleaned_data.get('username')
@@ -74,6 +77,7 @@ class Criar(BasePerfil):
         first_name = self.userform.cleaned_data.get('first_name')
         last_name = self.userform.cleaned_data.get('last_name')
 
+        # Usuário logado
         if self.request.user.is_authenticated:
             usuario = get_object_or_404(
                 User, username=self.request.user.username)
@@ -98,6 +102,7 @@ class Criar(BasePerfil):
                 perfil.usuario = usuario
                 perfil.save()
 
+        # Usário não logado (novo)
         else:
             usuario = self.userform.save(commit=False)
             usuario.set_password(password)
@@ -134,7 +139,7 @@ class Criar(BasePerfil):
         return self.renderizar
 
 
-class Atualizar(BasePerfil):
+class Atualizar(View):
     def get(self, *args, **kwargs):
         return HttpResponse('Atualizar')
 
@@ -147,26 +152,36 @@ class Login(View):
         if not username or not password:
             messages.error(
                 self.request,
-                'Usuário ou senha inválidos!'
+                'Usuário ou senha inválidos.'
             )
-
             return redirect('perfil:criar')
 
         usuario = authenticate(
             self.request, username=username, password=password)
 
         if not usuario:
-            messages.success(
+            messages.error(
                 self.request,
-                'Você fez login com sucesso. Pode concluir sua compra.'
+                'Usuário ou senha inválidos.'
             )
-            return redirect('produto:carrinho')
+            return redirect('perfil:criar')
+
+        login(self.request, user=usuario)
+
+        messages.success(
+            self.request,
+            'Você fez login no sistema e pode concluir sua compra.'
+        )
+        return redirect('produto:carrinho')
 
 
 class Logout(View):
     def get(self, *args, **kwargs):
         carrinho = copy.deepcopy(self.request.session.get('carrinho'))
+
         logout(self.request)
+
         self.request.session['carrinho'] = carrinho
         self.request.session.save()
+
         return redirect('produto:lista')
