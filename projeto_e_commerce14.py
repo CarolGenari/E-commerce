@@ -100,4 +100,22 @@ e produtos disponíveis em estoque, para que o cliente possa realizar sua compra
                 ]
             )
 
+-Obs: algumas modificações que ficaram por fazer
+    -No arquivo urls.py da app pedido, tínhamos adicionado a utl 'lista' e agora
+    vamos ajeitar a primeira url, que é pagar
+    -Depois, vamos no views e vamos mover o que tinhamos feito na class Pagar
+    para a class SalvarPedido. Assim, depois do pedido ser salvo, vamos redirecionar
+    para Pagar
+    -Então, a Class SalvarPedido não vai ter umtemplate, ela servirá apenas para
+    realizar sua tarefa e depois vamos para Pagar
+    -Nas urls, em 'pagar', ela deverá receber uma primary-key <int:pk>, porque
+    ela terá que conseguir abrir um pedido de acordo com seu id
+    -Então, moveremos todo o código que está dentro da class Pagar para a class
+    SalvarPedido
+    -Como trocamos esse código de classe, temos que alterar isso tbm no arquivo
+    'resumodacompra.html', que está dnetro da pasta templates da app produto.
+    Na parte do html que correspondia a Realizar pedido e pagar, estava 
+    href="{% url 'pedido:pagar' %}" e devemos alterar para: 
+    href="{% url 'pedido:salvarpedido' %}"
+
 """
