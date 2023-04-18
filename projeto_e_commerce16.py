@@ -32,7 +32,36 @@ meu projeto, mas o passo-a-passo é:
                  error_messages['cpf'] = 'CPF já existe.'
 
 -Criando a busca:
-    -
+    -Vamos iniciar criando uma url para esse motor de Busca. Para isso, vamos 
+    abrir o arquivo urls.py da app produto, chamada 'busca'. Depois temos que
+    adicionar ela no arquivo views da app. Criamos uma class chamada Busca e
+    vamos fazer com que ela herde da class ListaProdutos. Vamos ter adicionar
+    a queryset, porque na outra classe não mexemos nisso.
+    -Um QuerySet (conjunto de busca) é, em essência, uma lista de objetos de um 
+    dado modelo. QuerySet permite que você leia os dados a partir de uma base 
+    de dados, filtre e ordene.
+    -Definimos a queryset assim:
+         def get_queryset(self, *args, **kwargs):
+            termo = self.request.GET.get('termo')
+            qs = super().get_queryset(*args, **kwargs)
+
+         if not termo:
+            return qs
+
+         qs = qs.filter(
+            Q(nome__icontains=termo) |
+            Q(descricao_curta__icontains=termo) |
+            Q(descricao_longa__icontains=termo)
+        )
+        return qs
+
+    -Esse termo foi o nome que demos e se não tiver nada relacionado com ele, 
+    retornamos a queryset
+    -Tbm vamos permitir que a busca possa ser feita por 1 palavra, uma parte de
+    uma frase. Para isso, temos que importar: 
+
+    -Vamos na navbar e traduzir porque está Search e tbm adicionar as outras
+    coisas que faltam nessa parte da busca
 
 
 """
