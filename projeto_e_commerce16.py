@@ -20,5 +20,19 @@ meu projeto, mas o passo-a-passo é:
     pertençam aos templates
 
 -CPF único:
+    -Arquivo models da app perfil
+    -Já estávamos fazendo algumas validações no método clean()
+    -Vamos definir agora: cpf_enviado = self.cpf or None
+                          cpf_salvo = None
+                          perfil = Perfil.objects.filter(cpf=cpf_enviado).first()
+    -Agora temos que checar se o usuário tem registro e se o cpf encontrado na
+    base de dados é daquele perfil. Existe a possibilidade de encontrar um cpf 
+    na base de dados que pertença a outro perfil e isso vai gerar erro:
+            if cpf_salvo is not None and self.pk != perfil.pk:
+                 error_messages['cpf'] = 'CPF já existe.'
+
+-Criando a busca:
     -
+
+
 """
